@@ -70,7 +70,6 @@ class SrsErrorBoundary extends (Component as React.ComponentClass<ErrorBoundaryP
     console.error(prefix, "错误信息:", error.message)
     console.error(prefix, "错误堆栈:", error.stack)
     console.error(prefix, "组件堆栈:", errorInfo.componentStack)
-
     // 只在组件仍然挂载时更新状态
     if (this._isMounted) {
       this.setState({ errorInfo })

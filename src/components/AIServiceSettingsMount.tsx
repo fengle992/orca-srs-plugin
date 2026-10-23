@@ -64,7 +64,6 @@ import {
 const { Valtio } = window
 const { useSnapshot } = Valtio
 const { useEffect, useState, useRef } = window.React
-
 interface AIServiceSettingsMountProps {
   pluginName: string
 }

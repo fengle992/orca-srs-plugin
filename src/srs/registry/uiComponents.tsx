@@ -251,14 +251,14 @@ export function registerUIComponents(pluginName: string): void {
     icon: "ti ti-books",
     group: "SRS",
     title: "打开 AI 提示词库",
-    command: `${pluginName}.manageAIToolbarPrompts`
+    command: `${pluginName}.manageAIToolbarPromptsSlash`
   })
 
   orca.slashCommands.registerSlashCommand(`${pluginName}.openAIServiceSettings`, {
     icon: "ti ti-plug-connected",
     group: "SRS",
     title: "AI / Firecrawl 服务设置",
-    command: `${pluginName}.openAIServiceSettings`
+    command: `${pluginName}.openAIServiceSettingsSlash`
   })
 
   // ============ 阅读 / 今日学习斜杠命令 ============
@@ -281,7 +281,7 @@ export function registerUIComponents(pluginName: string): void {
     icon: "ti ti-book-2",
     group: "SRS",
     title: "打开阅读工作区",
-    command: `${pluginName}.startIncrementalReadingSession`
+    command: `${pluginName}.startIncrementalReadingSessionSlash`
   })
 
   orca.slashCommands.registerSlashCommand(`${pluginName}.ir_record`, {
@@ -295,21 +295,21 @@ export function registerUIComponents(pluginName: string): void {
     icon: "ti ti-calendar-check",
     group: "SRS",
     title: "今日学习",
-    command: `${pluginName}.openFlashcardHome`
+    command: `${pluginName}.openFlashcardHomeSlash`
   })
 
   orca.slashCommands.registerSlashCommand(`${pluginName}.importEpub`, {
     icon: "ti ti-book-upload",
     group: "SRS",
     title: "导入 EPUB",
-    command: `${pluginName}.importEpub`
+    command: `${pluginName}.importEpubSlash`
   })
 
   orca.slashCommands.registerSlashCommand(`${pluginName}.importWeb`, {
     icon: "ti ti-world-download",
     group: "SRS",
     title: "导入网页",
-    command: `${pluginName}.importWeb`
+    command: `${pluginName}.importWebSlash`
   })
 }
 

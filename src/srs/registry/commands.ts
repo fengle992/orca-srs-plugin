@@ -577,25 +577,55 @@ export function registerCommands(
   )
 
   // 管理工具栏 AI 提示词（无需选区）
+  const manageAIToolbarPromptsHandler = async () => {
+    const { openAIPromptManager } = await import("../ai/aiPromptManagerState")
+    await openAIPromptManager(_pluginName)
+  }
   orca.commands.registerCommand(
     `${pluginName}.manageAIToolbarPrompts`,
-    async () => {
-      const { openAIPromptManager } = await import("../ai/aiPromptManagerState")
-      await openAIPromptManager(_pluginName)
-    },
+    manageAIToolbarPromptsHandler,
     "SRS: 打开 AI 提示词库"
+  )
+  // 斜杠菜单在 Orca 1.9x 经编辑器命令管线执行：普通命令须另注册编辑器命令别名供斜杠调用
+  orca.commands.registerEditorCommand(
+    `${pluginName}.manageAIToolbarPromptsSlash`,
+    async () => {
+      await manageAIToolbarPromptsHandler()
+      return null
+    },
+    () => {},
+    { label: "SRS: 打开 AI 提示词库" }
   )
 
   // AI / Firecrawl 服务设置（独立面板，非原生设置页）
-  orca.commands.registerCommand(
-    `${pluginName}.openAIServiceSettings`,
-    async () => {
+  const openAIServiceSettingsHandler = async () => {
+    try {
       const { openAIServiceSettings } = await import(
         "../ai/aiServiceSettingsState"
       )
       await openAIServiceSettings(_pluginName)
-    },
+    } catch (error) {
+      // 斜杠菜单触发路径的异常不会上屏，必须显式通知
+      console.error(`[${_pluginName}] 打开 AI 服务设置失败:`, error)
+      const message =
+        error instanceof Error ? error.message : "打开服务设置失败"
+      orca.notify("error", message, { title: "服务设置" })
+    }
+  }
+  orca.commands.registerCommand(
+    `${pluginName}.openAIServiceSettings`,
+    openAIServiceSettingsHandler,
     "SRS: AI / Firecrawl 服务设置"
+  )
+  // 斜杠菜单在 Orca 1.9x 经编辑器命令管线执行：普通命令须另注册编辑器命令别名供斜杠调用
+  orca.commands.registerEditorCommand(
+    `${pluginName}.openAIServiceSettingsSlash`,
+    async () => {
+      await openAIServiceSettingsHandler()
+      return null
+    },
+    () => {},
+    { label: "SRS: AI / Firecrawl 服务设置" }
   )
 
   // 打开复习会话（次级入口 / 兼容旧命令 ID）
@@ -610,25 +640,47 @@ export function registerCommands(
   )
 
   // 打开今日学习主页（命令 ID 保留 openFlashcardHome 兼容）
+  const openFlashcardHomeHandler = async () => {
+    console.log(`[${_pluginName}] 打开今日学习`)
+    const { openFlashcardHome } = await import("../../main")
+    await openFlashcardHome()
+  }
   orca.commands.registerCommand(
     `${pluginName}.openFlashcardHome`,
-    async () => {
-      console.log(`[${_pluginName}] 打开今日学习`)
-      const { openFlashcardHome } = await import("../../main")
-      await openFlashcardHome()
-    },
+    openFlashcardHomeHandler,
     "SRS: 今日学习"
+  )
+  // 斜杠菜单在 Orca 1.9x 经编辑器命令管线执行：普通命令须另注册编辑器命令别名供斜杠调用
+  orca.commands.registerEditorCommand(
+    `${pluginName}.openFlashcardHomeSlash`,
+    async () => {
+      await openFlashcardHomeHandler()
+      return null
+    },
+    () => {},
+    { label: "SRS: 今日学习" }
   )
 
   // 打开阅读工作区（次级入口）
+  const startIncrementalReadingSessionHandler = async () => {
+    console.log(`[${_pluginName}] 打开阅读工作区`)
+    const { startIncrementalReadingSession } = await import("../../main")
+    await startIncrementalReadingSession()
+  }
   orca.commands.registerCommand(
     `${pluginName}.startIncrementalReadingSession`,
-    async () => {
-      console.log(`[${_pluginName}] 打开阅读工作区`)
-      const { startIncrementalReadingSession } = await import("../../main")
-      await startIncrementalReadingSession()
-    },
+    startIncrementalReadingSessionHandler,
     "SRS: 打开阅读材料"
+  )
+  // 斜杠菜单在 Orca 1.9x 经编辑器命令管线执行：普通命令须另注册编辑器命令别名供斜杠调用
+  orca.commands.registerEditorCommand(
+    `${pluginName}.startIncrementalReadingSessionSlash`,
+    async () => {
+      await startIncrementalReadingSessionHandler()
+      return null
+    },
+    () => {},
+    { label: "SRS: 打开阅读材料" }
   )
 
   // 打开渐进阅读管理面板命令
@@ -822,23 +874,45 @@ export function registerCommands(
   )
 
   // EPUB 导入（普通笔记）
+  const importEpubHandler = async () => {
+    const { showEpubImportDialog } = await import("../../components/epub-import/EpubImportDialogMount")
+    showEpubImportDialog(_pluginName)
+  }
   orca.commands.registerCommand(
     `${pluginName}.importEpub`,
-    async () => {
-      const { showEpubImportDialog } = await import("../../components/epub-import/EpubImportDialogMount")
-      showEpubImportDialog(_pluginName)
-    },
+    importEpubHandler,
     "导入 EPUB"
+  )
+  // 斜杠菜单在 Orca 1.9x 经编辑器命令管线执行：普通命令须另注册编辑器命令别名供斜杠调用
+  orca.commands.registerEditorCommand(
+    `${pluginName}.importEpubSlash`,
+    async () => {
+      await importEpubHandler()
+      return null
+    },
+    () => {},
+    { label: "导入 EPUB" }
   )
 
   // 网页文章导入（Firecrawl → 普通笔记 + 可选渐进阅读）
+  const importWebHandler = async () => {
+    const { showWebImportDialog } = await import("../../components/web-import/WebImportDialogMount")
+    showWebImportDialog(_pluginName)
+  }
   orca.commands.registerCommand(
     `${pluginName}.importWeb`,
-    async () => {
-      const { showWebImportDialog } = await import("../../components/web-import/WebImportDialogMount")
-      showWebImportDialog(_pluginName)
-    },
+    importWebHandler,
     "导入网页"
+  )
+  // 斜杠菜单在 Orca 1.9x 经编辑器命令管线执行：普通命令须另注册编辑器命令别名供斜杠调用
+  orca.commands.registerEditorCommand(
+    `${pluginName}.importWebSlash`,
+    async () => {
+      await importWebHandler()
+      return null
+    },
+    () => {},
+    { label: "导入网页" }
   )
 
   // 顺序解锁：跳过本章并继续
@@ -969,20 +1043,26 @@ export function unregisterCommands(pluginName: string): void {
   orca.commands.unregisterCommand(`${pluginName}.testAIConnection`)
   orca.commands.unregisterCommand(`${pluginName}.activatePendingCards`)
   orca.commands.unregisterCommand(`${pluginName}.manageAIToolbarPrompts`)
+  orca.commands.unregisterEditorCommand(`${pluginName}.manageAIToolbarPromptsSlash`)
   orca.commands.unregisterCommand(`${pluginName}.openAIServiceSettings`)
+  orca.commands.unregisterEditorCommand(`${pluginName}.openAIServiceSettingsSlash`)
   orca.commands.unregisterCommand(`${pluginName}.openOldReviewPanel`)
   
   // Flash Home 命令注销
   orca.commands.unregisterCommand(`${pluginName}.openFlashcardHome`)
+  orca.commands.unregisterEditorCommand(`${pluginName}.openFlashcardHomeSlash`)
 
   // 渐进阅读命令注销
   orca.commands.unregisterCommand(`${pluginName}.startIncrementalReadingSession`)
+  orca.commands.unregisterEditorCommand(`${pluginName}.startIncrementalReadingSessionSlash`)
   orca.commands.unregisterCommand(`${pluginName}.openIRManager`)
   orca.commands.unregisterCommand(`${pluginName}.toggleAutoExtractMark`)
   orca.commands.unregisterCommand(`${pluginName}.clearRecentDeckPreference`)
   orca.commands.unregisterCommand(getResetFsrsSettingsCommandId(pluginName))
   orca.commands.unregisterCommand(`${pluginName}.importEpub`)
+  orca.commands.unregisterEditorCommand(`${pluginName}.importEpubSlash`)
   orca.commands.unregisterCommand(`${pluginName}.importWeb`)
+  orca.commands.unregisterEditorCommand(`${pluginName}.importWebSlash`)
   orca.commands.unregisterCommand(`${pluginName}.skipSequentialChapter`)
   orca.commands.unregisterCommand(`${pluginName}.removeBookFromIR`)
   orca.commands.unregisterCommand(`${pluginName}.resumeEpubImport`)

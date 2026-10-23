@@ -164,42 +164,60 @@ export function isAIConnectionAuthError(errorCode: string): boolean {
 }
 
 export async function openAIServiceSettings(pluginName: string): Promise<void> {
-  if (isAIDialogBusyOrInReview()) {
-    orca.notify("warn", "请先关闭 AI 生成闪卡窗口", { title: "服务设置" })
-    return
-  }
-  if (isAIQuickInteractOpen()) {
-    orca.notify("warn", "请先关闭 AI 快捷交互窗口", { title: "服务设置" })
-    return
-  }
-  // 动态 import 避免与 aiPromptManagerState 循环依赖
-  const { isAIPromptManagerOpen } = await import("./aiPromptManagerState")
-  if (isAIPromptManagerOpen()) {
-    orca.notify("warn", "请先关闭 AI 提示词库", { title: "服务设置" })
-    return
+  try {
+    if (isAIDialogBusyOrInReview()) {
+      orca.notify("warn", "请先关闭 AI 生成闪卡窗口", { title: "服务设置" })
+      return
+    }
+    if (isAIQuickInteractOpen()) {
+      orca.notify("warn", "请先关闭 AI 快捷交互窗口", { title: "服务设置" })
+      return
+    }
+    // 动态 import 避免与 aiPromptManagerState 循环依赖
+    const { isAIPromptManagerOpen } = await import("./aiPromptManagerState")
+    if (isAIPromptManagerOpen()) {
+      orca.notify("warn", "请先关闭 AI 提示词库", { title: "服务设置" })
+      return
+    }
+  } catch (error) {
+    // 守卫检查自身失败不静默：报错后继续尝试打开设置面板
+    console.error("[AI ServiceSettings] 打开前守卫检查失败:", error)
+    const message =
+      error instanceof Error ? error.message : "打开前状态检查失败"
+    orca.notify("error", message, { title: "服务设置" })
   }
 
   aiServiceSettingsState.pluginName = pluginName
   aiServiceSettingsState.errorMessage = null
   aiServiceSettingsState.isSaving = false
+  // 先置 isOpen，保证后续任何一步失败对话框都已打开，错误可 inline 展示
+  aiServiceSettingsState.isOpen = true
   aiServiceSettingsState.isLoading = true
   // 先用同步缓存/settings 填充，避免空白
-  aiServiceSettingsState.initialAI = getAISettings(pluginName)
-  aiServiceSettingsState.initialFirecrawl = getWebImportSettings(pluginName)
-  aiServiceSettingsState.initialQuickCard = getQuickCardPrefs(pluginName)
-  aiServiceSettingsState.initialChapterQuiz = getChapterQuizPrefs(pluginName)
-  aiServiceSettingsState.initialIRSelectionToolbar =
-    getIRSelectionToolbarSettings(pluginName)
-  aiServiceSettingsState.initialTts = getTtsSettings(pluginName)
-  // 复习可见项存 plugin settings，同步可读；非法旧值展示安全草稿 + 警告
-  const reviewLoaded = loadReviewServiceSettings(pluginName)
-  aiServiceSettingsState.initialReview = reviewLoaded.draft
-  aiServiceSettingsState.reviewLoadWarning = reviewLoaded.warningMessage
-  const reviewAdvancedLoaded = loadReviewAdvancedSettings(pluginName)
-  aiServiceSettingsState.initialReviewAdvanced = reviewAdvancedLoaded.draft
-  aiServiceSettingsState.reviewAdvancedLoadWarning =
-    reviewAdvancedLoaded.warningMessage
-  aiServiceSettingsState.isOpen = true
+  try {
+    aiServiceSettingsState.initialAI = getAISettings(pluginName)
+    aiServiceSettingsState.initialFirecrawl = getWebImportSettings(pluginName)
+    aiServiceSettingsState.initialQuickCard = getQuickCardPrefs(pluginName)
+    aiServiceSettingsState.initialChapterQuiz = getChapterQuizPrefs(pluginName)
+    aiServiceSettingsState.initialIRSelectionToolbar =
+      getIRSelectionToolbarSettings(pluginName)
+    aiServiceSettingsState.initialTts = getTtsSettings(pluginName)
+    // 复习可见项存 plugin settings，同步可读；非法旧值展示安全草稿 + 警告
+    const reviewLoaded = loadReviewServiceSettings(pluginName)
+    aiServiceSettingsState.initialReview = reviewLoaded.draft
+    aiServiceSettingsState.reviewLoadWarning = reviewLoaded.warningMessage
+    const reviewAdvancedLoaded = loadReviewAdvancedSettings(pluginName)
+    aiServiceSettingsState.initialReviewAdvanced = reviewAdvancedLoaded.draft
+    aiServiceSettingsState.reviewAdvancedLoadWarning =
+      reviewAdvancedLoaded.warningMessage
+  } catch (error) {
+    // 同步预填失败不阻断打开：保留默认草稿并 inline 展示错误
+    console.error("[AI ServiceSettings] 同步预填设置失败:", error)
+    const message =
+      error instanceof Error ? error.message : "预填服务设置失败"
+    aiServiceSettingsState.errorMessage = message
+    orca.notify("error", message, { title: "服务设置" })
+  }
 
   try {
     const [ai, firecrawl, quickCard, chapterQuiz, irToolbar, tts] =
