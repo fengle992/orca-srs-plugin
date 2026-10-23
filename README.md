@@ -7,6 +7,22 @@
 
 ---
 
+## 📌 备份说明（Fork Notice)
+
+> **本仓库是备份副本，不是原作者仓库。**
+>
+> - **原作者 / 官方仓库**: [Samuelxiaozhuofeng/orca-srs-plugin](https://github.com/Samuelxiaozhuofeng/orca-srs-plugin)
+> - **备份原因**：本机 GitHub 凭据属于 fengle992，对原仓库无推送权限，因此将修复后的完整代码（含全部 git 历史）备份于此。
+> - **新增修复（v1.0.12，尚未合并上游）**：兼容 Orca Note 1.9x 斜杠命令管线。
+>   - **Bug 现象**：在 Orca Note 1.9x 中，点击斜杠菜单里的插件命令（如「AI / Firecrawl 服务设置」「打开 Flashcard Home」等）没有任何反应。
+>   - **根因**:1.9x 版本斜杠菜单的点击经宿主编辑器命令管线（`invokeTopEditorCommand`）执行，只认**编辑器命令**；而插件注册的是普通命令，斜杠项引用的命令 id 在编辑器命令表里不存在，导致静默失败。
+>   - **修复**：为 6 个被斜杠引用的命令各注册 `XxxSlash` 编辑器命令别名（`registerEditorCommand`)，斜杠菜单项改指向别名；同时加固了 AI 服务设置面板的打开逻辑。详见 [CHANGELOG.md](CHANGELOG.md)。
+>   - **反馈**：此 bug 已反馈给上游作者，修复也已整理在本仓库，欢迎到[原仓库](https://github.com/Samuelxiaozhuofeng/orca-srs-plugin/issues)提交 Issue 追踪合并进度。
+>
+> 以下内容为原作者 README 原文。
+
+---
+
 ## ✨ 功能特性
 
 ### 📝 主要卡片类型
