@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [1.0.13] - 2026-10-23
+
+### 修复
+- 修复「测试 AI 连接」误报「响应被最大输出 token 截断」：测连探测固定用 `maxTokens=5` 且明确允许空正文，但截断拦截先于空正文容忍执行，推理模型（如 deepseek-flash）把 5 个 token 全部用于思考并以 `finish_reason=length` 结束时，连接其实是通的却被判失败。现 `allowEmptyContent` 调用方跳过截断拦截，按合法响应 envelope 判为连接成功
+
 ## [1.0.12] - 2026-10-23
 
 ### 修复

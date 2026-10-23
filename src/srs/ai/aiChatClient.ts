@@ -306,8 +306,14 @@ async function attemptChatCompletions(
      *
      * 推理模型尤其容易撞上：reasoning token 计入 completion_tokens，
      * 思考可以吃掉九成预算。
+     *
+     * 例外：allowEmptyContent（连接测试等小预算探测）的调用方只关心
+     * 端点是否返回合法 envelope，明确容忍空正文/截断，此时跳过本拦截，
+     * 否则会误报「响应被截断」——测连用 maxTokens=5，推理模型（如
+     * deepseek-flash）会把 5 个 token 全部用于思考并以 length 结束，
+     * 连接其实是通的。
      */
-    if (choice?.finish_reason === "length") {
+    if (choice?.finish_reason === "length" && options.allowEmptyContent !== true) {
       const spent = usage?.completionTokens
       const reasoning = usage?.reasoningTokens
       const detail =

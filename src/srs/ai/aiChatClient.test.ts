@@ -673,6 +673,35 @@ describe("callChatCompletions output-budget truncation", () => {
     expect(result.error.message).toContain("最大输出 token")
   })
 
+  it("allows truncated empty response when allowEmptyContent is set (connection test)", async () => {
+    // 测连用 maxTokens=5；推理模型（deepseek-flash）会把 5 个 token 全部
+    // 用于思考并以 finish_reason=length 结束——端点其实是通的，不能误报截断。
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({
+        choices: [
+          { message: { content: "", reasoning_content: "…" }, finish_reason: "length" }
+        ],
+        usage: {
+          prompt_tokens: 10,
+          completion_tokens: 5,
+          total_tokens: 15,
+          completion_tokens_details: { reasoning_tokens: 5 }
+        }
+      })
+    )
+    const result = await callChatCompletions({
+      pluginName: PLUGIN,
+      messages: [{ role: "user", content: "Hi" }],
+      maxRetries: 0,
+      maxTokens: 5,
+      allowEmptyContent: true,
+      fetchImpl: fetchImpl as unknown as typeof fetch
+    })
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.content).toBe("")
+  })
+
   it("still reports truncation when usage is absent", async () => {
     const fetchImpl = vi.fn(async () =>
       jsonResponse({
